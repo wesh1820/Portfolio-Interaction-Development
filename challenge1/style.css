@@ -1,0 +1,151 @@
+/* style.css */
+
+/* Universal styles and reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.container {
+  width: 90%;
+  max-width: 500px;
+  background-color: #ffffff;
+  padding: 25px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+  text-align: center;
+  margin: 20px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 25px;
+  color: #333;
+  letter-spacing: 1px;
+  position: relative;
+}
+
+h1::after {
+  content: '';
+  width: 50px;
+  height: 4px;
+  background-color: #007bff;
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#quizSection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#question {
+  font-size: 1.5rem;
+  color: #444;
+  margin-bottom: 20px;
+  transition: color 0.3s;
+}
+
+#options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+#options button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+#options button:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#options button:focus {
+  outline: 3px solid #0056b3;
+}
+
+#answer {
+  font-size: 1.2rem;
+  color: #28a745;
+  margin-top: 20px;
+}
+
+#score, #timer {
+  font-size: 1.2rem;
+  color: #333;
+}
+
+#startButton {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+#startButton:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#startButton:focus {
+  outline: 3px solid #218838;
+}
+
+/* Media queries for larger screens */
+@media (min-width: 768px) {
+  .container {
+    width: 60%;
+    max-width: 600px;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  #question {
+    font-size: 2rem;
+  }
+
+  #options button {
+    padding: 20px;
+  }
+
+  #score, #timer, #answer {
+    font-size: 1.5rem;
+  }
+
+  #startButton {
+    padding: 20px;
+  }
+}

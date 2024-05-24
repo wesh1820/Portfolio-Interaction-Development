@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@tensorflow-models/handpose": "^0.1.0"
+  }
+}
