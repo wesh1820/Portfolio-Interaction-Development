@@ -3,7 +3,7 @@ const questionDiv = document.getElementById('question');
 const answerDiv = document.getElementById('answer');
 
 const questions = [
-    { question: 'What is the capital of France?', answer: 'Paris' },
+    { question: 'Who killed Mace windu', answer: 'Palpatine' },
     { question: 'What is the largest planet in our solar system?', answer: 'Jupiter' },
     { question: 'How many continents are there?', answer: 'Seven' },
     { question: 'What is the tallest mountain in the world?', answer: 'Mount Everest' },

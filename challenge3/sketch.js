@@ -1,56 +1,48 @@
-let objectDetector;
+let video;
+let classifier;
+let canvas;
+let context;
+let modelLoaded = false;
 
-let img;
-let objects = [];
-let modelLoaded;
+window.addEventListener('load', () => {
+  video = document.getElementById('video');
+  canvas = document.getElementById('canvas');
+  context = canvas.getContext('2d');
 
-function preload() {
-  img = loadImage('images/bike.jpg');
-}
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      video.srcObject = stream;
+    })
+    .catch(err => {
+      console.error('Error accessing the camera', err);
+    });
 
+  classifier = ml5.imageClassifier('MobileNet', () => {
+    console.log('Model Loaded!');
+    modelLoaded = true;
+    document.querySelector('h1').innerText = "Model Loaded! Click the button to capture and classify the image.";
+  });
 
-function setup() {
-  createCanvas(640, 420);
-  objectDetector = ml5.objectDetector('cocossd', modelReady);
-}
-document.querySelector("#btn-detect").addEventListener(
-  'click',
-  () => objectDetector.detect(img, gotResult)
-);
+  document.getElementById('capture').addEventListener('click', captureAndClassify);
+});
 
-function modelReady() {
-  modelLoaded = true;
-  document.querySelector("#model-feedback").style.display = "none";
-  document.querySelector("#btn-detect").style.display = "inline-block";
-  // objectDetector.detect(img, gotResult);
-}
+function captureAndClassify() {
+  if (!modelLoaded) return;
 
-function gotResult(err, results) {
-  if (err) {
-    console.log(err);
-  }
-  console.log(results)
-  objects = results;
-}
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-
-function draw() {
-  // enkel tekenen als model geladen werd
-  image(img, 0, 0);
-  if (modelLoaded) {
-    //teken groene kader rond elk gevonden object
-    for (let i = 0; i < objects.length; i++) {
-      if (objects[i].confidence > 0.5) {
-
-        noStroke();
-        fill(0, 208, 133);
-        // textSize(8);
-        text(objects[i].label + " " + nfc(objects[i].confidence * 100.0, 2) + "%", objects[i].x + 8, objects[i].y + 12);
-        noFill();
-        strokeWeight(4);
-        stroke(0, 208, 133);
-        rect(objects[i].x, objects[i].y, objects[i].width, objects[i].height);
-      }
+  classifier.classify(canvas, (err, results) => {
+    if (err) {
+      console.error(err);
+      return;
     }
-  }
+
+    const resultsContainer = document.getElementById('results');
+    resultsContainer.innerHTML = '';
+
+    results.forEach(result => {
+      const confidence = (result.confidence * 100).toFixed(2);
+      resultsContainer.innerHTML += `<p>${result.label} - ${confidence}%</p>`;
+    });
+  });
 }

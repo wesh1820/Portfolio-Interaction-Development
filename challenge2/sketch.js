@@ -1,103 +1,66 @@
-let targets = [];
-let score = 0;
-let timer = 30; // in seconds
-let gameOver = false;
-let video;
+const video = document.createElement('video');
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-function setup() {
-  createCanvas(640, 480);
-  video = createCapture(VIDEO);
-  video.hide(); // Hide the video element
-  initializeTargets();
-  setInterval(decreaseTimer, 1000); // Decrease timer every second
+canvas.width = 640;
+canvas.height = 480;
+
+let model, videoWidth, videoHeight;
+let characterX = canvas.width / 2;
+let characterY = canvas.height / 2;
+
+// Load PoseNet
+async function setupCamera() {
+    video.width = canvas.width;
+    video.height = canvas.height;
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+    });
+    video.srcObject = stream;
+
+    return new Promise((resolve) => {
+        video.onloadedmetadata = () => {
+            resolve(video);
+        };
+    });
+}
+
+async function loadPosenet() {
+    model = await posenet.load();
+}
+
+async function detectPose() {
+    const pose = await model.estimateSinglePose(video, {
+        flipHorizontal: true, // Horizontaal spiegelen
+    });
+    
+    const nose = pose.keypoints.find(point => point.part === 'nose');
+
+    if (nose.score > 0.5) {
+        characterX = (nose.position.x / videoWidth) * canvas.width;
+        characterY = (nose.position.y / videoHeight) * canvas.height;
+    }
+
+    draw();
+    requestAnimationFrame(detectPose);
 }
 
 function draw() {
-  background(220);
-  push(); // Save the current drawing style
-  translate(width, 0); // Move the origin to the top-right corner
-  scale(-1, 1); // Mirror horizontally
-  image(video, 0, 0, width, height); // Display the mirrored video feed
-  pop(); // Restore the previous drawing style
-  
-  if (!gameOver) {
-    // Display targets
-    for (let i = 0; i < targets.length; i++) {
-      targets[i].display();
-    }
-
-    // Display score
-    fill(0);
-    textSize(24);
-    textAlign(RIGHT);
-    text(`Score: ${score}`, width - 20, 30);
-
-    // Display timer
-    text(`Time: ${timer}`, width - 20, 60);
-
-    // Check for game over
-    if (timer <= 0) {
-      gameOver = true;
-      textSize(36);
-      fill(255, 0, 0);
-      textAlign(CENTER);
-      text("Game Over", width / 2, height / 2);
-      textSize(24);
-      fill(0);
-      text(`Final Score: ${score}`, width / 2, height / 2 + 50);
-    }
-  }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'red';
+    ctx.fillRect(characterX - 25, characterY - 25, 50, 50);
 }
 
-function initializeTargets() {
-  for (let i = 0; i < 5; i++) {
-    let x = random(width);
-    let y = random(height);
-    targets.push(new Target(x, y, 50));
-  }
+async function init() {
+    await setupCamera();
+    video.play();
+
+    videoWidth = video.videoWidth;
+    videoHeight = video.videoHeight;
+
+    await loadPosenet();
+    detectPose();
 }
 
-function mousePressed() {
-  // Check if mouse click hits any target
-  if (!gameOver) {
-    let handDetected = false;
-    // Iterate through each target
-    for (let i = targets.length - 1; i >= 0; i--) {
-      if (targets[i].hitWithinRegion(palmX, palmY)) { // Assuming palmX and palmY represent the coordinates of the fist
-        score++;
-        targets.splice(i, 1); // Remove the target
-        handDetected = true;
-        break; // Exit loop after hitting one target
-      }
-    }
-    if (!handDetected) {
-      // Penalty for missing the target
-      score--;
-    }
-  }
-}
-
-function decreaseTimer() {
-  if (!gameOver) {
-    timer--;
-  }
-}
-
-class Target {
-  constructor(x, y, size) {
-    this.x = x;
-    this.y = y;
-    this.size = size;
-  }
-  
-  display() {
-    fill(255, 0, 0);
-    ellipse(this.x, this.y, this.size, this.size);
-  }
-  
-  hitWithinRegion(x, y) {
-    // Check if the given coordinates are within the region of the target
-    let d = dist(x, y, this.x, this.y);
-    return d < this.size / 2;
-  }
-}
+init();
