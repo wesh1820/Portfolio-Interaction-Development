@@ -2,7 +2,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-image: url(./homebg.jpeg);
+    background-image: url(./images/homebg.jpeg);
     background-repeat: no-repeat;
     background-size: cover;
 }
@@ -28,7 +28,7 @@ p{
 }
 
 .project {
-    background-image: url(./divimg.jpeg);
+    background-image: url(./images/divimg.jpeg);
     background-repeat: no-repeat;
     background-size: cover;
     border: 1px solid #ddd;

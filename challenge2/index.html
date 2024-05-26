@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Object Avoidance Game</title>
-    <script src="./ml5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
+    <title>The Last Ride!</title>
     <script src="./p5.min.js"></script>
+    <script src="./ml5.min.js"></script>
+    <script src="./p5.sound.js"></script>
     <style>
         body {
             margin: 0;
@@ -101,7 +101,7 @@
 
     <!-- Start Screen -->
     <div id="start-screen" class="overlay">
-        <div>Object Avoidance Game</div>
+        <div>The Last Ride!</div>
         <div>Press Start to Play</div>
         <button onclick="startGame()">Start</button>
         <button onclick="showHowToPlay()">How to Play</button>
@@ -110,13 +110,16 @@
     <!-- Game Over Screen -->
     <div id="game-over-screen" class="overlay">
         <div>Game Over</div>
+        <div>You didn't reached the rebel base.</div>
         <div id="final-score"></div>
         <button onclick="restartGame()">Restart</button>
     </div>
 
     <!-- Win Game Screen -->
     <div id="win-screen" class="overlay">
-        <div>You Reached the Rebel Base!</div>
+      <div>Congratulationa!</div>
+        <div>You've Reached the Rebel Base!</div>
+        <div>You're home now.</div>
         <div id="final-score"></div>
         <button onclick="restartGame()">Restart</button>
     </div>
@@ -125,7 +128,7 @@
     <div id="how-to-play-screen" class="overlay">
         <div style="color: white;">
             <h2>How to Play</h2>
-            <p>Welcome to the Object Avoidance Game!</p>
+            <p>Welcome to The Last Ride!</p>
             <p>Use your head movement to control the character.</p>
             <p>Avoid the obstacles coming towards you.</p>
             <p>Collect points by shooting the obstacles with bullets.</p>
@@ -157,8 +160,20 @@
         const bulletSpeed = 5; // Snelheid van de kogels
         const obstacleSpeed = 3; // Snelheid van de obstakels
 
+        // Sound variables
+        let startSound, winSound, loseSound;
+
         function preload() {
             rebelBaseImg = loadImage('./rebelbase.webp'); // Zorg ervoor dat het pad naar je afbeelding correct is
+
+            // Load sounds
+            startSound = loadSound('./sounds/start.mp3', soundLoaded);
+            winSound = loadSound('./sounds/victory.mp3');
+            loseSound = loadSound('./sounds/lose.mp3');
+        }
+
+        function soundLoaded() {
+            console.log("Sounds loaded successfully.");
         }
 
         function setup() {
@@ -187,13 +202,16 @@
         }
 
         function startGame() {
+            console.log("Start button pressed.");
+            stopAllSounds();
+            startSound.play();
             document.getElementById('start-screen').style.display = 'none';
             setInterval(addObstacle, obstacleInterval);
             requestAnimationFrame(updateGame);
         }
 
         function updateGame() {
-            if (level >= 2) {
+            if (level >= 25) {
                 winGame();
                 return;
             }
@@ -207,8 +225,7 @@
                     characterX = (head.position.x / video.width) * width;
                     characterY = (head.position.y / video.height) * height;
 
-                    if (characterY < height / 
-                    2 && millis() - lastBulletTime > fireRate) {
+                    if (characterY < height / 2 && millis() - lastBulletTime > fireRate) {
                         fireBullet();
                         lastBulletTime = millis();
                     }
@@ -255,13 +272,16 @@
         }
 
         function gameOver() {
+            stopAllSounds();
+            loseSound.play();
             document.getElementById('game-over-screen').style.display = 'flex';
         }
 
         function winGame() {
+            stopAllSounds();
+            winSound.play();
             background(0);
-            image(rebelBaseImg, 0, 0, gameWidth, gameHeight); // Toon de afbeelding van de rebellenbasis
-
+            image(rebelBaseImg, 0, 0, gameWidth, gameHeight);
             document.getElementById('win-screen').style.display = 'flex';
         }
 
@@ -363,16 +383,20 @@
         }
 
         function restartGame() {
-            // Reset alle variabelen naar hun oorspronkelijke waarden
             score = 0;
             level = 1;
             lives = 3;
             obstacles = [];
             bulletPool.forEach(bullet => bullet.deactivate());
-            // Toon het startscherm opnieuw
             document.getElementById('game-over-screen').style.display = 'none';
             document.getElementById('win-screen').style.display = 'none';
             document.getElementById('start-screen').style.display = 'flex';
+        }
+
+        function stopAllSounds() {
+            if (startSound.isPlaying()) startSound.stop();
+            if (winSound.isPlaying()) winSound.stop();
+            if (loseSound.isPlaying()) loseSound.stop();
         }
 
         function showHowToPlay() {
