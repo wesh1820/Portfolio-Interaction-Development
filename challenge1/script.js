@@ -10,9 +10,9 @@ const questions = [
     answer: 'Darth Vader' 
   },
   { 
-    question: 'What is the name of the desert planet where Anakin Skywalker was discovered?',
-    options: ['Tatooine', 'Hoth', 'Endor', 'Jakku'],
-    answer: 'Tatooine' 
+    question: 'Who leads the Rebel Alliance in the original Star Wars trilogy?',
+    options: ['Princess Leia', 'Luke Skywalker', 'Han Solo', 'Mon Mothma'],
+    answer: 'Princess Leia' 
   },
   { 
     question: 'What species is Yoda?',
@@ -20,9 +20,9 @@ const questions = [
     answer: 'Unknown' 
   },
   { 
-    question: 'Who is the only character to appear in every main Star Wars film?',
-    options: ['R2-D2', 'C-3PO', 'Chewbacca', 'Han Solo'],
-    answer: 'R2-D2' 
+    question: 'What is the name of the Wookiee co-pilot of the Millennium Falcon?',
+    options: ['Chewbacca', 'Wicket', 'Lando Calrissian', 'Greedo'],
+    answer: 'Chewbacca' 
   },
   { 
     question: 'What weapon is associated with the Jedi?',
@@ -35,17 +35,17 @@ const questions = [
     answer: 'Han Solo' 
   },
   { 
-    question: 'What is the name of the bounty hunter who froze Han Solo in carbonite?',
+    question: 'Who is the bounty hunter who froze Han Solo in carbonite?',
     options: ['Boba Fett', 'Dengar', 'Bossk', 'IG-88'],
     answer: 'Boba Fett' 
   },
   { 
-    question: 'What is the name of the Sith Lord in "The Phantom Menace"?',
-    options: ['Darth Maul', 'Darth Sidious', 'Darth Plagueis', 'Darth Tyranus'],
-    answer: 'Darth Maul' 
+    question: 'Which bounty hunter is also a skilled assassin and appeared in "Attack of the Clones"?',
+    options: ['Zam Wesell', 'Aurra Sing', 'Cad Bane', 'Embo'],
+    answer: 'Zam Wesell' 
   },
   { 
-    question: 'What is the planet destroying superweapon in "A New Hope"?',
+    question: 'What is the planet-destroying superweapon in "A New Hope"?',
     options: ['Death Star', 'Starkiller Base', 'Executor', 'Star Destroyer'],
     answer: 'Death Star' 
   },
@@ -53,43 +53,42 @@ const questions = [
     question: 'Who trained Obi-Wan Kenobi as a Jedi?',
     options: ['Qui-Gon Jinn', 'Yoda', 'Mace Windu', 'Anakin Skywalker'],
     answer: 'Qui-Gon Jinn' 
-  },
-  // Add more questions with multiple-choice options here
+  }
 ];
 
 let currentQuestionIndex = 0;
 let score = 0;
-let recognition; // Variable for speech recognition
+let recognition;
 
 startButton.addEventListener('click', () => {
   startQuiz();
 });
 
 function startQuiz() {
-  score = 0; // Reset the score
-  scoreDisplay.textContent = ''; // Clear the score display
-  currentQuestionIndex = 0; // Reset question index
-  recognition = new (webkitSpeechRecognition || SpeechRecognition)(); // Initialize speech recognition
-  recognition.lang = 'en-US'; // Set language to English
-  
-  askQuestion(); // Start asking questions
+  score = 0; 
+  scoreDisplay.textContent = '';
+  currentQuestionIndex = 0;
+  recognition = new (webkitSpeechRecognition || SpeechRecognition)();
+  recognition.lang = 'en-US';
+
+  askQuestion();
 }
 
 function askQuestion() {
   if (currentQuestionIndex < questions.length) {
     const question = questions[currentQuestionIndex];
-    // Show the question
+    
     questionDiv.textContent = question.question;
 
     readText(question.question, () => {
-      // Show the options after reading the question
+     
       const optionsHTML = question.options.map((option, index) => {
         return `<p>${option}</p>`;
       }).join('');
   
       answerDiv.innerHTML = optionsHTML;
   
-      recognition.start(); // Start recognition
+      recognition.start(); 
     });
 
     recognition.onresult = function(event) {
@@ -102,29 +101,44 @@ function askQuestion() {
     };
 
     setTimeout(() => {
-      recognition.stop(); // Stop recognition after 10 seconds
+      recognition.stop();
       currentQuestionIndex++;
-      askQuestion(); // Move to the next question
-    }, 10000); // 10 seconds timer
+      askQuestion(); 
+    }, 10000);
   } else {
-    endQuiz(); // No more questions, end the quiz
+    endQuiz(); 
   }
 }
 
 function readText(text, callback) {
-  const speech = new SpeechSynthesisUtterance();
-  speech.text = text;
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = 'en-US'; 
+
+  const voices = window.speechSynthesis.getVoices();
+ 
+  const selectedVoice = voices.find(voice => voice.name === 'Google UK English Male');
+
+  if (selectedVoice) {
+    speech.voice = selectedVoice;
+  } else {
+    console.warn('The desired voice is not available.');
+  }
+
   window.speechSynthesis.speak(speech);
-  // Call the callback function after reading is completed
-  speech.onend = callback;
+  speech.onend = callback; 
 }
 
+
+window.speechSynthesis.onvoiceschanged = () => {
+  console.log(window.speechSynthesis.getVoices());
+};
+
 function handleAnswer(userAnswer, correctAnswer) {
-  recognition.stop(); // Stop recognition when the user selects an answer
+  recognition.stop(); 
   if (userAnswer === correctAnswer.toLowerCase()) {
     answerDiv.textContent = 'Correct!';
-    score += 100; // Increment score for correct answer
-    scoreDisplay.textContent = `Score: ${score}`; // Update score display
+    score += 100; 
+    scoreDisplay.textContent = `Score: ${score}`; 
   } else {
     answerDiv.textContent = 'Wrong!';
     answerDiv.innerHTML += ` The correct answer is: <strong>${correctAnswer}</strong>`;

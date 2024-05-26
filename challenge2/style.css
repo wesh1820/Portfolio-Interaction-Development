@@ -1,19 +1,121 @@
-body, html {
+body {
   margin: 0;
-  padding: 0;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-image: url(./falcon.webp);
+  background-image: url(./images/deathstar.jpeg);
   background-repeat: no-repeat;
   background-size: cover;
 }
 
-#game-container {
-  position: relative;
+#canvas-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 60vh; /* Adjusted for better responsiveness */
 }
 
-#gameCanvas {
-  border: 1px solid #000;
+canvas {
+  transform: scaleX(-1);
+  display: block;
+  margin: auto;
+  position: absolute;
+  z-index: -1;
+}
+
+.flipped-text {
+  transform: scaleX(-1);
+}
+
+#header {
+  background-color: #f0f0f0;
+  padding: 10px;
+  text-align: center;
+  font-size: 2vw;
+  font-weight: bold;
+  box-sizing: border-box;
+  margin-left: auto;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: white;
+  font-size: 3vw;
+  text-align: center;
+}
+
+#start-screen,
+#how-to-play-screen,
+#win-screen,
+#game-over-screen {
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 20px;
+  max-width: 90%;
+}
+
+#start-screen button,
+#how-to-play-screen button,
+#win-screen button,
+#game-over-screen button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #a4081f;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 3vw;
+}
+
+#how-to-play-screen button:hover {
+  background-color: #121212;
+}
+
+@media (min-width: 768px) {
+  #canvas-container {
+      height: 80vh; /* More height for larger screens */
+  }
+          #start-screen,
+#how-to-play-screen,
+#win-screen,
+#game-over-screen {
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 20px;
+  max-width: 100%;
+}
+
+  #header {
+      font-size: 1.5vw; /* Smaller font size for desktop */
+  }
+
+  .overlay {
+      font-size: 2vw; /* Adjusted font size for desktop */
+  }
+
+  #start-screen button,
+  #how-to-play-screen button,
+  #win-screen button,
+  #game-over-screen button {
+      font-size: 2vw; /* Adjusted button font size for desktop */
+      padding: 15px 30px;
+  }
+}
+
+@media (orientation: landscape) {
+  #canvas-container {
+      height: 70vh; /* Different height for landscape mode */
+  }
 }

@@ -4,19 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maze Game</title>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
-    canvas {
-      display: block;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <script src="./classes/ball.js"></script>
+<script src="./script.js"></script>
 </head>
 <body>
-  <button id="motion" onclick="requestMotionPermission()">Click to enable motion</button>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-<script src="./script.js"></script>
+    <div id="start-screen" class="screen">
+      <h2>Welcome to the Maze Game</h2>
+      <button onclick="startGame()">Start Game</button>
+      <button onclick="showInstructions()">How to Play</button>
+    </div>
+    <div id="instructions-screen" class="screen">
+      <h2>Instructions</h2>
+      <p>Use your device's motion sensors to navigate the ball through the maze and reach the goal.</p>
+      <p>Tilt your device in the direction you want the ball to move.</p>
+      <button onclick="hideInstructions()">Close</button>
+    </div>
+    <div id="win-screen" class="screen">
+      <h2>Congratulations!</h2>
+      <p>You found the princess!</p>
+      <button onclick="restartGame()">Restart Game</button>
+    </div>
+    <button id="motion" onclick="requestMotionPermission()">Click to enable motion</button>
 </body>
 </html>

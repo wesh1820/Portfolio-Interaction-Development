@@ -1,414 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Last Ride!</title>
+    <link rel="stylesheet" href="./style.css">
     <script src="./p5.min.js"></script>
     <script src="./ml5.min.js"></script>
     <script src="./p5.sound.js"></script>
-    <style>
-        body {
-            margin: 0;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-image: url(./deathstar.jpeg);
-            background-repeat: no-repeat;
-            background-size: cover;
-        }
-
-        #canvas-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-left: 20%;
-        }
-
-        canvas {
-            transform: scaleX(-1);
-            display: block;
-            margin: auto;
-            position: absolute;
-            z-index: -1;
-            margin-left: 20%;
-        }
-
-        .flipped-text {
-            transform: scaleX(-1);
-        }
-
-        #header {
-            background-color: #f0f0f0;
-            padding: 10px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-        }
-
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            color: white;
-            font-size: 24px;
-        }
-
-        #how-to-play-screen {
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            max-width: 99%;
-            text-align: center;
-        }
-
-        #how-to-play-screen button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #how-to-play-screen button:hover {
-            background-color: #45a049;
-        }
-    </style>
+    <script src="./sketch.js"></script>
 </head>
 
 <body>
     <div id="header">
         <span id="score">Score: 0</span> | <span id="lives">Lives: 3</span> | <span id="level">Level: 1</span>
     </div>
-    <div id="canvas-container" style="display: flex; justify-content: center; align-items: center;">
+    <div id="canvas-container">
         <canvas id="defaultCanvas0"></canvas>
     </div>
     <video id="video" style="display:none;"></video>
 
-    <!-- Start Screen -->
     <div id="start-screen" class="overlay">
-        <div>The Last Ride!</div>
-        <div>Press Start to Play</div>
+        <h2>The Last Ride!</h2>
+        <p>The Death Star destroyed a planet, and now you must navigate through the debris to make it home.</p>
+        <p>Reach level 25!</p>
+        <p>Press Start to Play</p>
         <button onclick="startGame()">Start</button>
         <button onclick="showHowToPlay()">How to Play</button>
     </div>
 
-    <!-- Game Over Screen -->
     <div id="game-over-screen" class="overlay">
         <div>Game Over</div>
-        <div>You didn't reached the rebel base.</div>
+        <p>You didn't reach the rebel base.</p>
         <div id="final-score"></div>
         <button onclick="restartGame()">Restart</button>
     </div>
 
-    <!-- Win Game Screen -->
     <div id="win-screen" class="overlay">
-      <div>Congratulationa!</div>
-        <div>You've Reached the Rebel Base!</div>
-        <div>You're home now.</div>
+        <div>Congratulations!</div>
+        <p>You've reached the Rebel Base!</p>
+        <p>You're home now.</p>
         <div id="final-score"></div>
         <button onclick="restartGame()">Restart</button>
     </div>
 
-    <!-- How to Play Screen -->
     <div id="how-to-play-screen" class="overlay">
-        <div style="color: white;">
+        <div>
             <h2>How to Play</h2>
             <p>Welcome to The Last Ride!</p>
             <p>Use your head movement to control the character.</p>
+            <p>You can also shoot by moving your head upwards.</p>
             <p>Avoid the obstacles coming towards you.</p>
-            <p>Collect points by shooting the obstacles with bullets.</p>
             <p>Each level increases the difficulty by adding more obstacles.</p>
             <p>Survive as long as you can and reach the rebel base!</p>
         </div>
         <button onclick="hideHowToPlay()">Close</button>
     </div>
-
-    <script>
-        let video;
-        let poseNet;
-        let poses = [];
-        let characterX, characterY;
-        let obstacles = [];
-        let bulletPool = [];
-        let lastBulletTime = 0;
-        let fireRate = 1000;
-        let gameWidth = 840;
-        let gameHeight = 800;
-        let score = 0;
-        let level = 1;
-        let bulletsPerLevel = 1;
-        let lives = 3;
-        let obstacleInterval = 2000;
-        let lastObstacleTime = 0;
-        let rebelBaseImg;
-        const maxBullets = 50; // Maximum aantal kogels in de pool
-        const bulletSpeed = 5; // Snelheid van de kogels
-        const obstacleSpeed = 3; // Snelheid van de obstakels
-
-        // Sound variables
-        let startSound, winSound, loseSound;
-
-        function preload() {
-            rebelBaseImg = loadImage('./rebelbase.webp'); // Zorg ervoor dat het pad naar je afbeelding correct is
-
-            // Load sounds
-            startSound = loadSound('./sounds/start.mp3', soundLoaded);
-            winSound = loadSound('./sounds/victory.mp3');
-            loseSound = loadSound('./sounds/lose.mp3');
-        }
-
-        function soundLoaded() {
-            console.log("Sounds loaded successfully.");
-        }
-
-        function setup() {
-            createCanvas(gameWidth, gameHeight);
-            video = createCapture(VIDEO);
-            video.size(gameWidth, gameHeight);
-            video.hide();
-
-            poseNet = ml5.poseNet(video, modelReady);
-            poseNet.on('pose', function (results) {
-                poses = results;
-            });
-
-            characterX = width / 2;
-            characterY = height / 2;
-
-            for (let i = 0; i < maxBullets; i++) {
-                bulletPool.push(new Bullet());
-            }
-
-            document.getElementById('start-screen').style.display = 'flex';
-        }
-
-        function modelReady() {
-            console.log('Model Loaded');
-        }
-
-        function startGame() {
-            console.log("Start button pressed.");
-            stopAllSounds();
-            startSound.play();
-            document.getElementById('start-screen').style.display = 'none';
-            setInterval(addObstacle, obstacleInterval);
-            requestAnimationFrame(updateGame);
-        }
-
-        function updateGame() {
-            if (level >= 25) {
-                winGame();
-                return;
-            }
-
-            background(0);
-
-            if (poses.length > 0) {
-                let head = poses[0].pose.keypoints.find(point => point.part === 'nose');
-
-                if (head.score > 0.5) {
-                    characterX = (head.position.x / video.width) * width;
-                    characterY = (head.position.y / video.height) * height;
-
-                    if (characterY < height / 2 && millis() - lastBulletTime > fireRate) {
-                        fireBullet();
-                        lastBulletTime = millis();
-                    }
-                }
-            }
-
-            fill(255, 0, 0);
-            rect(characterX - 25, characterY - 25, 50, 50);
-
-            for (let i = obstacles.length - 1; i >= 0; i--) {
-                let obstacle = obstacles[i];
-                obstacle.update();
-                obstacle.show();
-
-                for (let j = bulletPool.length - 1; j >= 0; j--) {
-                    let bullet = bulletPool[j];
-                    if (bullet.active) {
-                        bullet.update();
-                        bullet.show();
-                        if (bullet.hits(obstacle)) {
-                            bullet.deactivate();
-                            obstacles.splice(i, 1);
-                            score++;
-                            break;
-                        }
-                    }
-                }
-
-                if (obstacle.hits(characterX, characterY)) {
-                    obstacles.splice(i, 1);
-                    lives--;
-                    if (lives <= 0) {
-                        gameOver();
-                        return;
-                    }
-                }
-            }
-
-            document.getElementById('score').innerText = 'Score: ' + score;
-            document.getElementById('lives').innerText = 'Lives: ' + lives;
-            document.getElementById('level').innerText = 'Level: ' + level;
-
-            requestAnimationFrame(updateGame);
-        }
-
-        function gameOver() {
-            stopAllSounds();
-            loseSound.play();
-            document.getElementById('game-over-screen').style.display = 'flex';
-        }
-
-        function winGame() {
-            stopAllSounds();
-            winSound.play();
-            background(0);
-            image(rebelBaseImg, 0, 0, gameWidth, gameHeight);
-            document.getElementById('win-screen').style.display = 'flex';
-        }
-
-        function addObstacle() {
-            obstacles.push(new Obstacle());
-        }
-
-        function fireBullet() {
-            let bullet = bulletPool.find(b => !b.active);
-            if (bullet) {
-                bullet.activate(characterX, characterY);
-            }
-        }
-
-        class Obstacle {
-            constructor() {
-                this.x = random(width);
-                this.y = random(-height, 0);
-                this.size = random(50, 70);
-                this.speed = obstacleSpeed;
-            }
-
-            update() {
-                this.y += this.speed;
-
-                if (this.y > height) {
-                    this.y = random(-height, 0);
-                    this.x = random(width);
-                    score++;
-
-                    if (score % 10 === 0) {
-                        level++;
-                        bulletsPerLevel += level;
-                        let additionalObstacles = level * 0.05;
-
-                        if (additionalObstacles >= 1) {
-                            for (let i = 0; i < Math.floor(additionalObstacles); i++) {
-                                obstacles.push(new Obstacle());
-                            }
-                        }
-
-                        if (random(1) < additionalObstacles % 1) {
-                            obstacles.push(new Obstacle());
-                        }
-
-                        for (let obstacle of obstacles) {
-                            obstacle.speed += 0.05;
-                        }
-                    }
-                }
-            }
-
-            show() {
-                fill(200);
-                ellipse(this.x, this.y, this.size);
-            }
-
-            hits(px, py) {
-                let d = dist(this.x, this.y, px, py);
-                return (d < this.size / 2 + 25);
-            }
-        }
-
-        class Bullet {
-            constructor() {
-                this.x = 0;
-                this.y = 0;
-                this.size = 5;
-                this.speed = bulletSpeed;
-                this.active = false;
-            }
-
-            activate(x, y) {
-                this.x = x;
-                this.y = y;
-                this.active = true;
-            }
-
-            deactivate() {
-                this.active = false;
-            }
-
-            update() {
-                this.y -= this.speed;
-                if (this.y < 0) {
-                    this.deactivate();
-                }
-            }
-
-            show() {
-                fill(0, 255, 0);
-                ellipse(this.x, this.y, this.size);
-            }
-
-            hits(obstacle) {
-                let d = dist(this.x, this.y, obstacle.x, obstacle.y);
-                return (d < this.size / 2 + obstacle.size / 2);
-            }
-        }
-
-        function restartGame() {
-            score = 0;
-            level = 1;
-            lives = 3;
-            obstacles = [];
-            bulletPool.forEach(bullet => bullet.deactivate());
-            document.getElementById('game-over-screen').style.display = 'none';
-            document.getElementById('win-screen').style.display = 'none';
-            document.getElementById('start-screen').style.display = 'flex';
-        }
-
-        function stopAllSounds() {
-            if (startSound.isPlaying()) startSound.stop();
-            if (winSound.isPlaying()) winSound.stop();
-            if (loseSound.isPlaying()) loseSound.stop();
-        }
-
-        function showHowToPlay() {
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('how-to-play-screen').style.display = 'flex';
-        }
-
-        function hideHowToPlay() {
-            document.getElementById('how-to-play-screen').style.display = 'none';
-            document.getElementById('start-screen').style.display = 'flex';
-        }
-    </script>
 </body>
 
 </html>
