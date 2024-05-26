@@ -13,7 +13,9 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  background-image: url(./images/bg.jpeg);
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .container {
@@ -93,13 +95,13 @@ h1::after {
 
 #answer {
   font-size: 1.2rem;
-  color: #28a745;
+  color: #005e14;
   margin-top: 20px;
 }
 
 #score, #timer {
   font-size: 1.2rem;
-  color: #333;
+  color: #333333;
 }
 
 #startButton {

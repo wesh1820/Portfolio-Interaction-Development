@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>Recognition App</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="./sketch.js"></script>
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <div class="container">
-    <h1>Wait for the model to load.</h1>
-    <video id="video" width="320" height="240" autoplay></video>
+    <h1>Wait for R2-D2 to load.</h1>
+    <video id="video" width="320" height="240" autoplay playsinline></video>
     <button id="capture">Capture Photo</button>
     <canvas id="canvas" width="320" height="240"></canvas>
     <div id="results"></div>
@@ -18,5 +17,68 @@
   <script src="p5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.dom.js"></script>
   <script src="./ml5.min.js"></script>
+  <script>
+    let video;
+    let classifier;
+    let canvas;
+    let context;
+    let modelLoaded = false;
+
+    window.addEventListener('load', () => {
+      video = document.getElementById('video');
+      canvas = document.getElementById('canvas');
+      context = canvas.getContext('2d');
+
+      const constraints = {
+        video: {
+          facingMode: { ideal: "environment" }  // Use 'ideal' to allow fallback
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
+          video.srcObject = stream;
+          console.log('Camera stream obtained');
+        })
+        .catch(err => {
+          console.error('Error accessing the camera:', err);
+          alert('Error accessing the camera: ' + err.message);
+        });
+
+      classifier = ml5.imageClassifier('MobileNet', () => {
+        console.log('R2-D2 Loaded!');
+        modelLoaded = true;
+        document.querySelector('h1').innerText = "R2-D2 is ready";
+      });
+
+      document.getElementById('capture').addEventListener('click', captureAndClassify);
+    });
+
+    function captureAndClassify() {
+      if (!modelLoaded) {
+        console.error('Model not loaded yet');
+        return;
+      }
+
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      classifier.classify(canvas, (err, results) => {
+        if (err) {
+          console.error('Error during classification:', err);
+          return;
+        }
+
+        const resultsContainer = document.getElementById('results');
+        resultsContainer.innerHTML = '';
+
+        results.forEach(result => {
+          const confidence = (result.confidence * 100).toFixed(2);
+          resultsContainer.innerHTML += `<p>${result.label} - ${confidence}%</p>`;
+        });
+
+        console.log('Classification results:', results);
+      });
+    }
+  </script>
 </body>
 </html>

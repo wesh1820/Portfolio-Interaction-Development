@@ -18,9 +18,9 @@ window.addEventListener('load', () => {
     });
 
   classifier = ml5.imageClassifier('MobileNet', () => {
-    console.log('Model Loaded!');
+    console.log('R2-D2 Loaded!');
     modelLoaded = true;
-    document.querySelector('h1').innerText = "Model Loaded! Click the button to capture and classify the image.";
+    document.querySelector('h1').innerText = "R2-D2 is ready";
   });
 
   document.getElementById('capture').addEventListener('click', captureAndClassify);

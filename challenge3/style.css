@@ -1,6 +1,9 @@
+/* styles.css */
+
 body {
-  font-family: "Arial", sans-serif;
-  background: url("wallpaper1.png") no-repeat center center fixed;
+  font-family: Arial, sans-serif;
+  background-image: url(./r2d2.jpeg);
+  background-repeat: no-repeat;
   background-size: cover;
   margin: 0;
   padding: 0;
@@ -8,64 +11,46 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
+  color: #333;
 }
 
 .container {
-  text-align: center;
-  max-width: 600px; /* Adjust for optimal width */
-  width: 100%;
-  margin: 20px;
-}
-
-.glass {
-  background: rgba(0, 0, 0, 0.6); /* More pronounced transparent black */
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
+  background: #fff;
   padding: 20px;
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.7); /* More dramatic shadow */
-  margin: 0 auto;
-  color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 360px;
 }
 
-h2 {
-  margin: 0;
-  padding: 10px;
-  font-size: 1.5em;
+h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+video, canvas {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 10px;
 }
 
 button {
-  background-color: #333;
+  background-color: #007BFF;
   color: white;
   border: none;
   padding: 10px 20px;
-  margin: 10px;
-  border-radius: 5px;
+  font-size: 16px;
   cursor: pointer;
-  box-shadow: 0 5px 7px rgba(0, 0, 0, 0.5);
-  transition: background-color 0.3s ease;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  transition: background-color 0.3s;
 }
 
 button:hover {
-  background-color: #444;
+  background-color: #0056b3;
 }
 
-.fileContainer {
-  margin: 20px 0;
-  display: inline-block;
-  padding: 10px 20px;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 5px;
-}
-
-#camera,
-#result {
-  margin-top: 15px;
-  background-color: rgba(255, 255, 255, 0.3); /* Slightly transparent white */
-  border-radius: 5px;
-  padding: 10px;
-}
-
-#result {
-  font-family: monospace;
-  overflow-wrap: break-word; /* To handle long text */
+#results {
+  font-size: 18px;
+  color: #333;
 }

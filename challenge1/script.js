@@ -1,83 +1,137 @@
 const startButton = document.getElementById('startButton');
 const questionDiv = document.getElementById('question');
 const answerDiv = document.getElementById('answer');
+const scoreDisplay = document.getElementById('score');
 
 const questions = [
-    { question: 'Who killed Mace windu', answer: 'Palpatine' },
-    { question: 'What is the largest planet in our solar system?', answer: 'Jupiter' },
-    { question: 'How many continents are there?', answer: 'Seven' },
-    { question: 'What is the tallest mountain in the world?', answer: 'Mount Everest' },
-    { question: 'Who wrote "Romeo and Juliet"?', answer: 'William Shakespeare' },
-    { question: 'What is the chemical symbol for water?', answer: 'H2O' },
-    { question: 'Who painted the Mona Lisa?', answer: 'Leonardo da Vinci' },
-    { question: 'What is the largest ocean on Earth?', answer: 'Pacific Ocean' },
-    { question: 'What is the boiling point of water in Celsius?', answer: '100 degrees' },
-    { question: 'Who was the first person to step on the moon?', answer: 'Neil Armstrong' }
-  ];
-  
+  { 
+    question: 'Who is the father of Luke Skywalker?',
+    options: ['Darth Vader', 'Obi-Wan Kenobi', 'Emperor Palpatine', 'Han Solo'],
+    answer: 'Darth Vader' 
+  },
+  { 
+    question: 'What is the name of the desert planet where Anakin Skywalker was discovered?',
+    options: ['Tatooine', 'Hoth', 'Endor', 'Jakku'],
+    answer: 'Tatooine' 
+  },
+  { 
+    question: 'What species is Yoda?',
+    options: ['Jedi Master', 'Human', 'Wookiee', 'Unknown'],
+    answer: 'Unknown' 
+  },
+  { 
+    question: 'Who is the only character to appear in every main Star Wars film?',
+    options: ['R2-D2', 'C-3PO', 'Chewbacca', 'Han Solo'],
+    answer: 'R2-D2' 
+  },
+  { 
+    question: 'What weapon is associated with the Jedi?',
+    options: ['Blaster', 'Lightsaber', 'Bowcaster', 'E-11 Blaster Rifle'],
+    answer: 'Lightsaber' 
+  },
+  { 
+    question: 'Who is the pilot of the Millennium Falcon?',
+    options: ['Han Solo', 'Luke Skywalker', 'Lando Calrissian', 'Chewbacca'],
+    answer: 'Han Solo' 
+  },
+  { 
+    question: 'What is the name of the bounty hunter who froze Han Solo in carbonite?',
+    options: ['Boba Fett', 'Dengar', 'Bossk', 'IG-88'],
+    answer: 'Boba Fett' 
+  },
+  { 
+    question: 'What is the name of the Sith Lord in "The Phantom Menace"?',
+    options: ['Darth Maul', 'Darth Sidious', 'Darth Plagueis', 'Darth Tyranus'],
+    answer: 'Darth Maul' 
+  },
+  { 
+    question: 'What is the planet destroying superweapon in "A New Hope"?',
+    options: ['Death Star', 'Starkiller Base', 'Executor', 'Star Destroyer'],
+    answer: 'Death Star' 
+  },
+  { 
+    question: 'Who trained Obi-Wan Kenobi as a Jedi?',
+    options: ['Qui-Gon Jinn', 'Yoda', 'Mace Windu', 'Anakin Skywalker'],
+    answer: 'Qui-Gon Jinn' 
+  },
+  // Add more questions with multiple-choice options here
+];
 
 let currentQuestionIndex = 0;
+let score = 0;
+let recognition; // Variable for speech recognition
 
 startButton.addEventListener('click', () => {
   startQuiz();
 });
 
 function startQuiz() {
-  if (currentQuestionIndex < questions.length) {
-    askQuestion();
-  } else {
-    endQuiz();
-  }
+  score = 0; // Reset the score
+  scoreDisplay.textContent = ''; // Clear the score display
+  currentQuestionIndex = 0; // Reset question index
+  recognition = new (webkitSpeechRecognition || SpeechRecognition)(); // Initialize speech recognition
+  recognition.lang = 'en-US'; // Set language to English
+  
+  askQuestion(); // Start asking questions
 }
 
 function askQuestion() {
-  const question = questions[currentQuestionIndex];
-  questionDiv.textContent = question.question;
-  readText(question.question);
+  if (currentQuestionIndex < questions.length) {
+    const question = questions[currentQuestionIndex];
+    // Show the question
+    questionDiv.textContent = question.question;
 
-  const recognition = new (webkitSpeechRecognition || SpeechRecognition)();
-  recognition.lang = 'en-US';
-  recognition.start();
+    readText(question.question, () => {
+      // Show the options after reading the question
+      const optionsHTML = question.options.map((option, index) => {
+        return `<p>${option}</p>`;
+      }).join('');
+  
+      answerDiv.innerHTML = optionsHTML;
+  
+      recognition.start(); // Start recognition
+    });
 
-  let timer;
+    recognition.onresult = function(event) {
+      const userAnswer = event.results[0][0].transcript.trim().toLowerCase();
+      handleAnswer(userAnswer, question.answer);
+    };
 
-  recognition.onresult = function(event) {
-    clearTimeout(timer);
+    recognition.onerror = function(event) {
+      console.error('Speech recognition error:', event.error);
+    };
 
-    const userAnswer = event.results[0][0].transcript.trim();
-    answerDiv.textContent = `Your answer: ${userAnswer}`;
-    checkAnswer(userAnswer, question.answer);
-  };
-
-  recognition.onerror = function(event) {
-    console.error('Speech recognition error:', event.error);
-  };
-
-  timer = setTimeout(() => {
-    recognition.stop();
-    answerDiv.textContent = 'Time is up!';
-    currentQuestionIndex++;
-    setTimeout(startQuiz, 6000); // Wait 2 seconds before asking the next question
-  }, 10000); // 10 seconds timer
+    setTimeout(() => {
+      recognition.stop(); // Stop recognition after 10 seconds
+      currentQuestionIndex++;
+      askQuestion(); // Move to the next question
+    }, 10000); // 10 seconds timer
+  } else {
+    endQuiz(); // No more questions, end the quiz
+  }
 }
 
-function readText(text) {
+function readText(text, callback) {
   const speech = new SpeechSynthesisUtterance();
   speech.text = text;
   window.speechSynthesis.speak(speech);
+  // Call the callback function after reading is completed
+  speech.onend = callback;
 }
 
-function checkAnswer(userAnswer, correctAnswer) {
-  if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
-    answerDiv.textContent += ' - Correct!';
+function handleAnswer(userAnswer, correctAnswer) {
+  recognition.stop(); // Stop recognition when the user selects an answer
+  if (userAnswer === correctAnswer.toLowerCase()) {
+    answerDiv.textContent = 'Correct!';
+    score += 100; // Increment score for correct answer
+    scoreDisplay.textContent = `Score: ${score}`; // Update score display
   } else {
-    answerDiv.textContent += ' - Wrong!';
+    answerDiv.textContent = 'Wrong!';
+    answerDiv.innerHTML += ` The correct answer is: <strong>${correctAnswer}</strong>`;
   }
-  currentQuestionIndex++;
-  setTimeout(startQuiz, 2000); // Wait 2 seconds before asking the next question
 }
 
 function endQuiz() {
   questionDiv.textContent = 'Quiz finished!';
-  answerDiv.textContent = '';
+  answerDiv.textContent = `Your final score is: ${score}`;
 }
