@@ -1,4 +1,3 @@
-let video;
 let poseNet;
 let poses = [];
 let characterX, characterY;
@@ -262,14 +261,14 @@ function stopAllSounds() {
     if (startSound.isPlaying()) startSound.stop();
     if (winSound.isPlaying()) winSound.stop(); 
     if (loseSound.isPlaying()) loseSound.stop();
-    }
-    
-    function showHowToPlay() {
+}
+
+function showHowToPlay() {
     document.getElementById('start-screen').style.display = 'none';
     document.getElementById('how-to-play-screen').style.display = 'flex';
-    }
-    
-    function hideHowToPlay() {
+}
+
+function hideHowToPlay() {
     document.getElementById('how-to-play-screen').style.display = 'none';
     document.getElementById('start-screen').style.display = 'flex';
-    }
+}
